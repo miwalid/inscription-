@@ -34,3 +34,7 @@ Chaque organisateur approuvé dispose de toutes les fonctions pour ses propres s
 Le bouton « حذف » déplace une inscription vers « المحذوفة ». « استرجاع » permet de la restaurer. Les dossiers supprimés ne figurent plus dans les listes et totaux courants. Une réinscription active identique empêche la restauration pour éviter les doublons.
 
 Pour une installation neuve, appliquer `database/schema.sql`, puis `database/organizer_scope_and_registration_trash.sql`. Le test SQL `tests/organizer_scope.sql` utilise une transaction annulée : il vérifie l’isolation réciproque de deux organisateurs, l’accès aux justificatifs, les écritures refusées, la suppression et la restauration.
+
+## Présentation
+
+La présentation validée utilise des cartes en nuances de vert, jaune et rouge, avec le logo circulaire fourni par l’organisation. Les cartes et les listes se réorganisent sur téléphone. Les valeurs affichées proviennent des stages et dossiers de l’organisateur connecté.
