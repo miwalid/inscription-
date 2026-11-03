@@ -30,6 +30,7 @@ Deno.serve(async(req:Request)=>{
  const {data:stage,error:stageError}=await client.from('training_stages').select('id,closed,docs,fee').eq('id',stageId).maybeSingle();if(stageError)throw stageError;if(!stage)return json({error:'التربص غير موجود'},404);if(stage.closed)return json({error:'التسجيل مغلق لهذا التربص'},400);
  const firstName=String(f.get('firstName')||'').normalize('NFKC').trim().replace(/\s+/g,' '),lastName=String(f.get('lastName')||'').normalize('NFKC').trim().replace(/\s+/g,' '),phone=String(f.get('phone')||'').replace(/[\s-]/g,''),birth=String(f.get('birth')||'');
  if(!firstName||firstName.length>80||!lastName||lastName.length>80||!/^\+?[0-9]{8,15}$/.test(phone)||!/^\d{4}-\d{2}-\d{2}$/.test(birth)||Number.isNaN(Date.parse(birth))||birth<'1900-01-01'||birth>new Date().toISOString().slice(0,10))return json({error:'تحقق من الاسم ورقم الهاتف وتاريخ الولادة'},400);
+ const gender=String(f.get('gender')||'');if(!['male','female'].includes(gender))return json({error:'اختر الجنس: ذكر أو أنثى، ثم أرسل الترشح.'},400);
  const id=crypto.randomUUID(),files:Array<{key:string,name:string,filename:string,type:string,file:File}>=[];let total=0;
  for(const [i,d] of stage.docs.entries()){
  const file=f.get('doc'+i);if(!(file instanceof File)||!file.size){if(d.required)return json({error:'الوثيقة مطلوبة: '+d.name},400);continue}
@@ -40,7 +41,7 @@ Deno.serve(async(req:Request)=>{
  const uploaded:string[]=[];
  try{
  for(const x of files){const {error}=await client.storage.from('training-documents').upload(x.key,x.file,{contentType:x.type,upsert:false});if(error)throw error;uploaded.push(x.key)}
- const record={id,stage_id:stageId,firstName,lastName,phone,birth,fee:stage.fee,decision:'pending',paid:false,present:false,files:files.map(({file,...x})=>x)};
+ const record={id,stage_id:stageId,firstName,lastName,phone,birth,gender,fee:stage.fee,decision:'pending',paid:false,present:false,files:files.map(({file,...x})=>x)};
  const {error}=await client.from('training_applicants').insert(record);if(error){if(error.code==='23505')throw Error('تم تسجيل هذا المترشح سابقاً في هذا التربص');throw error}
  return json({ok:true});
  }catch(e){if(uploaded.length)await client.storage.from('training-documents').remove(uploaded);throw e}

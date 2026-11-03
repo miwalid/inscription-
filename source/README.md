@@ -38,3 +38,9 @@ Pour une installation neuve, appliquer `database/schema.sql`, puis `database/org
 ## Présentation
 
 La présentation validée utilise des cartes en nuances de vert, jaune et rouge, avec le logo circulaire fourni par l’organisation. Les cartes et les listes se réorganisent sur téléphone. Les valeurs affichées proviennent des stages et dossiers de l’organisateur connecté.
+
+## Badges des participants
+
+Le formulaire demande le sexe (ذكر / أنثى). Les dossiers antérieurs conservent une valeur non précisée : l’organisateur doit la renseigner et enregistrer le dossier avant de générer son badge. Aucune valeur n’est déduite du nom.
+
+« البطاقة » ouvre une carte individuelle ; « بطاقات المشاركين » prépare les badges de la liste filtrée. Chaque badge mesure 85 × 120 mm en portrait et contient le prénom, le nom, le titre et les dates du stage ainsi que مدرب ou مدربة. La prévisualisation permet d’imprimer ou de sauvegarder en PDF, avec une page par badge. Sélectionner une échelle de 100 %. Appliquer `database/registration_gender.sql` après les schémas précédents pour une installation neuve.
