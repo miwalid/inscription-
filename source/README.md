@@ -26,3 +26,11 @@ Le dossier `database/` décrit le schéma installé. Les migrations du projet Su
 5. Enregistrer le paiement intégral pour confirmer l'inscription, puis la présence au stage.
 
 Les exports respectent les filtres affichés. PDF utilise la fonction « Enregistrer au format PDF » du navigateur. Les justificatifs acceptés sont PDF, PNG, JPEG et WEBP, jusqu'à 5 MB par fichier et 25 MB par dossier.
+
+## Suppression et droits des organisateurs
+
+Chaque organisateur approuvé dispose de toutes les fonctions pour ses propres stages. La propriété est contrôlée par Supabase RLS pour les stages, les inscriptions et les justificatifs. Le stage existant est attribué à son organisateur actuel. Un autre compte organisateur ne voit pas ces dossiers. Les formulaires publics restent accessibles aux candidats par leurs liens de stage.
+
+Le bouton « حذف » déplace une inscription vers « المحذوفة ». « استرجاع » permet de la restaurer. Les dossiers supprimés ne figurent plus dans les listes et totaux courants. Une réinscription active identique empêche la restauration pour éviter les doublons.
+
+Pour une installation neuve, appliquer `database/schema.sql`, puis `database/organizer_scope_and_registration_trash.sql`. Le test SQL `tests/organizer_scope.sql` utilise une transaction annulée : il vérifie l’isolation réciproque de deux organisateurs, l’accès aux justificatifs, les écritures refusées, la suppression et la restauration.

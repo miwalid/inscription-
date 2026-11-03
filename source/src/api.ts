@@ -21,12 +21,16 @@ if(path==='/api/manage'&&init){
  const {type,data}=JSON.parse(String(init.body));
  if(type==='stage'){
  const stage={id:data.id||crypto.randomUUID(),title:data.title.trim(),description:data.description||'',place:data.place,start:data.start,end:data.end,fee:Number(data.fee),closed:!!data.closed,docs:data.docs};
- const {error}=await supabase.from('training_stages').upsert(stage);if(error)throw error;
+ const {error}=await supabase.from('training_stages').upsert(stage).select('id').single();if(error)throw error;
  }else if(type==='applicant'){
- const {error}=await supabase.from('training_applicants').update({decision:data.decision,paid:data.decision==='accepted'&&!!data.paid,present:!!data.present}).eq('id',data.id).select('id').single();if(error)throw error;
+ const {error}=await supabase.from('training_applicants').update({decision:data.decision,paid:data.decision==='accepted'&&!!data.paid,present:!!data.present}).eq('id',data.id).is('deleted_at',null).select('id').single();if(error)throw error;
+ }else if(type==='delete_applicant'||type==='restore_applicant'){
+ let q=supabase.from('training_applicants').update({deleted_at:type==='delete_applicant'?new Date().toISOString():null}).eq('id',data.id);
+ q=type==='delete_applicant'?q.is('deleted_at',null):q.not('deleted_at','is',null);
+ const {error}=await q.select('id').single();if(error)throw error;
  }else throw Error('طلب غير صالح');return response({ok:true});
 }throw Error('طلب غير صالح');
-}catch(e:any){const code=e?.code;const message=code==='23505'?'تم تسجيل هذا المترشح سابقاً.':code==='42501'?'غير مسموح لهذا الحساب بالدخول إلى الإدارة.':e.message||'تعذر الاتصال. حاول مرة أخرى.';return response({error:message},400)}
+}catch(e:any){const code=e?.code;const message=code==='23505'?'تم تسجيل هذا المترشح سابقاً.':code==='PGRST116'?'الملف غير موجود أو لا تملك صلاحية تعديله.':code==='42501'?'غير مسموح لهذا الحساب بالدخول إلى الإدارة.':e.message||'تعذر الاتصال. حاول مرة أخرى.';return response({error:message},400)}
 }
 export async function signOut(){await supabase.auth.signOut();location.href=location.pathname+'?admin=1'}
 export async function openDocument(path:string){const {data,error}=await supabase.storage.from('training-documents').createSignedUrl(path,120);if(error)throw error;const a=document.createElement('a');a.href=data.signedUrl;a.target='_blank';a.rel='noopener noreferrer';a.click()}
