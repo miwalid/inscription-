@@ -86,3 +86,12 @@ L’application utilise « participants » / « المشاركون » dans son t
 Après un dépôt réussi, le participant reçoit son code personnel en texte sélectionnable avec le bouton « نسخ الرمز », ainsi qu’un QR téléchargeable. Les deux représentent la même référence de dossier. Le QR ouvre l’application avec cette référence ; l’organisateur doit se connecter et ne peut ouvrir que les dossiers de ses propres stages. Une fois connecté, le dossier s’ouvre automatiquement pour consultation et validation manuelle. Aucun nom, numéro de téléphone ou justificatif n’est encodé dans le QR ; les droits Supabase restent inchangés. Le QR est généré localement, sans service tiers.
 
 Depuis un dossier existant, « عرض رمز المشارك و QR » retrouve également ces deux formats et permet de télécharger le QR sans refaire l’inscription.
+
+
+## Scanner QR des participants
+
+Le bouton « مسح رمز QR » à côté du code personnel ouvre un lecteur réservé à l’organisateur connecté. Il utilise la caméra arrière si disponible, après une action explicite, ou lit une image choisie localement. Les images ne sont pas envoyées au serveur. Fermer le lecteur, arrêter la caméra ou reconnaître un code arrête les pistes vidéo.
+
+Le lecteur accepte un code personnel de 12 caractères hexadécimaux ou le QR de reçu produit par la même application (même origine et chemin). Il ne navigue jamais vers une adresse scannée. La recherche passe par le même accès authentifié et les mêmes restrictions aux stages de l’organisateur que la saisie manuelle. Le scan ouvre le dossier sans modifier le paiement ou la validation. Un refus de caméra et les images sans QR ou étrangères affichent un message avec possibilité de réessayer.
+
+Vérification : compilation TypeScript et production, décodage réel d’un QR généré, rejet des URL étrangères et références invalides, lecture d’image dans l’interface et ouverture du bon dossier avec données fictives ; affichage vérifié à 360 px. La caméra physique doit être autorisée et utilisée sur un appareil équipé, via HTTPS.
