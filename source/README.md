@@ -60,3 +60,11 @@ La fenêtre des badges propose 1 · أنيق, 2 · عصري, 3 · بسيط. Le c
 La photo récente/personnelle jointe au formulaire est reconnue. Si le stage ne demande aucune photo, un champ séparé permet de joindre une photo pour le badge. L’organisateur peut choisir une image déjà jointe ou ajouter une photo pour un ancien dossier depuis la fenêtre des badges. JPG, PNG et WEBP, 5 MB maximum ; pas de PDF comme portrait. La nouvelle photo est conservée sans supprimer les anciens justificatifs (15 documents maximum).
 
 Les images restent dans le bucket privé. Le chargement utilise l’accès authentifié soumis à RLS, avec des URL blob temporaires révoquées à la fermeture. Le point d’entrée serveur `mode=badge-photo` vérifie le compte approuvé, la propriété du stage et l’absence de suppression avant de choisir ou joindre une photo. Une comparaison des documents empêche de remplacer une modification simultanée. L’impression attend le chargement de toutes les photos ; les cartes sans photo doivent être complétées. Le format reste 85 × 120 mm et 4 badges par feuille A4.
+
+## Placement des badges sur A4
+
+L’aperçu « معاينة ورقة A4 » montre la feuille complète utilisée pour l’impression. Les quatre badges de 85 × 120 mm sont centrés : marges gauche/droite de 15 mm, haut/bas de 23,5 mm, intervalles horizontaux/verticaux de 10 mm. Une feuille incomplète conserve les mêmes emplacements. Cliquer une carte de la feuille sélectionne son participant ; l’aperçu individuel reste disponible.
+
+Pendant l’ouverture de la fenêtre des badges, une règle temporaire définit aussi la page par défaut en A4 portrait sans marges CSS supplémentaires. Cela évite l’interférence de la règle A4 paysage des listes, y compris dans les navigateurs ignorant les pages nommées. La fermeture rétablit les réglages des listes. Les marges de sécurité sont incluses dans la feuille elle-même. Dans le dialogue d’impression : A4 portrait, 100 %, une page par feuille, sans en-tête ni pied de page.
+
+La zone d’impression masque aussi le conteneur complet de l’interface afin de ne pas générer une première page blanche. Les cartes des pages suivantes ne sont pas découpées par un masque de la feuille.
