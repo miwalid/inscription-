@@ -131,3 +131,8 @@ Les quatre modèles de badges de responsables reprennent la couleur actuelle du 
 Appliquer `database/staff_group_assignment.sql` après `database/workshop_allocation.sql` : ajout de `training_staff.group_index`, contrôle que le groupe existe dans le stage du responsable, et suppression de l’affectation lorsque le nombre de groupes est réduit au-dessous de l’index attribué. Les responsables devront alors être réaffectés. Les règles RLS de propriétaire du stage restent inchangées.
 
 Validation : `tests/staff_group_scope.sql` (ROLLBACK) couvre sauvegarde, désaffectation, rejet d’un groupe inexistant, couleur partagée, retrait d’un groupe, isolation des organisateurs et confidentialité des photos. L’interface a été vérifiée avec des responsables fictifs, affectation au groupe 2 puis groupe 3 et actualisation des couleurs correspondantes ; les quatre modèles de responsables ont été contrôlés sans débordement, demi-cercle au centre et aucun texte de groupe sur le badge. Compilation TypeScript et production réussies.
+
+
+## Repère couleur de groupe agrandi
+
+Le repère de couleur est un disque de rayon 10 mm (au lieu de 8 mm), centré verticalement sur le bord droit du badge. Le disque de 20 mm dépasse de 6 mm vers la droite : environ trois quarts de sa surface restent visibles. La règle est commune aux dix modèles participants et aux quatre modèles responsables. Les noms proches du repère sont ajustés pour préserver leur lisibilité ; la couleur est toujours celle du groupe, sans nom, numéro ou effectif de groupe sur le badge. Les dimensions du badge et les quatre emplacements par feuille A4 restent inchangés.
