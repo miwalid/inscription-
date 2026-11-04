@@ -95,3 +95,8 @@ Le bouton « مسح رمز QR » à côté du code personnel ouvre un lecteur r�
 Le lecteur accepte un code personnel de 12 caractères hexadécimaux ou le QR de reçu produit par la même application (même origine et chemin). Il ne navigue jamais vers une adresse scannée. La recherche passe par le même accès authentifié et les mêmes restrictions aux stages de l’organisateur que la saisie manuelle. Le scan ouvre le dossier sans modifier le paiement ou la validation. Un refus de caméra et les images sans QR ou étrangères affichent un message avec possibilité de réessayer.
 
 Vérification : compilation TypeScript et production, décodage réel d’un QR généré, rejet des URL étrangères et références invalides, lecture d’image dans l’interface et ouverture du bon dossier avec données fictives ; affichage vérifié à 360 px. La caméra physique doit être autorisée et utilisée sur un appareil équipé, via HTTPS.
+
+
+## Paiement indépendant de la décision
+
+La case de paiement et le bouton de la rubrique الخلاص sont disponibles pour un dossier en attente, accepté ou refusé. Modifier la décision conserve le paiement enregistré. Le client écrit paid indépendamment de decision ; la migration database/independent_payment.sql retire uniquement l’ancienne contrainte qui imposait l’acceptation avant paiement. Les paiements déjà enregistrés et les règles d’accès par organisateur restent inchangés. Le compteur et le filtre des inscriptions confirmées exigent à la fois decision=accepted et paid=true. Le filtre « في انتظار الخلاص » affiche tous les dossiers actifs non payés, indépendamment de la décision. Les totaux restants explicitement indiqués « pour les dossiers acceptés » gardent ce périmètre.

@@ -28,7 +28,6 @@ create table public.training_applicants (
   fee numeric(10,3) not null check(fee>=0),
   files jsonb not null default '[]' check(jsonb_typeof(files)='array' and jsonb_array_length(files)<=15),
   created_at timestamptz not null default now(),
-  check(not paid or decision='accepted'),
   unique(stage_id,"firstName","lastName",phone,birth)
 );
 create index training_applicants_stage_idx on public.training_applicants(stage_id);
