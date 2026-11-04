@@ -43,3 +43,6 @@ if(path==='/api/manage'&&init){
 }
 export async function signOut(){await supabase.auth.signOut();location.href=location.pathname+'?admin=1'}
 export async function openDocument(path:string){const {data,error}=await supabase.storage.from('training-documents').createSignedUrl(path,120);if(error)throw error;const a=document.createElement('a');a.href=data.signedUrl;a.target='_blank';a.rel='noopener noreferrer';a.click()}
+
+export async function downloadBadgePhoto(key:string){const {data,error}=await supabase.storage.from('training-documents').download(key);if(error)throw error;if(!data||!['image/jpeg','image/png','image/webp'].includes(data.type)||data.size>5*1024*1024)throw Error('تعذر تحميل صورة صالحة للبطاقة.');return URL.createObjectURL(data)}
+export async function saveBadgePhoto(id:string,source:File|string){const form=new FormData();form.set('applicantId',id);if(typeof source==='string')form.set('fileKey',source);else form.set('photo',source);const r=await request('/api/register?mode=badge-photo',{method:'POST',body:form});const data=await r.json();if(!r.ok)throw Error(data.error);return data.files}

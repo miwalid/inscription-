@@ -52,3 +52,11 @@ Appliquer `database/registration_personal_code.sql` après les migrations préc�
 L’organisateur connecté saisit ce code dans « فتح ملف بالرمز الشخصي ». La recherche est exacte, tolère les minuscules, les espaces et les tirets, exclut les dossiers supprimés et reste soumise aux règles de propriété Supabase. Le code ne donne aucun accès public et n’accepte pas automatiquement le candidat : le dossier s’ouvre pour examen, décision et enregistrement du paiement selon le fonctionnement existant.
 
 Les documents non obligatoires restent disponibles sans la mention « اختياري ». Les documents obligatoires gardent la mention « إجباري » et la validation de leur présence. Pour les badges, sélectionner A4 portrait, 100 %, sans en-tête ni pied de page ; le dernier feuillet peut contenir moins de 4 badges.
+
+## Trois modèles avec photo
+
+La fenêtre des badges propose 1 · أنيق, 2 · عصري, 3 · بسيط. Le choix, mémorisé sur l’appareil, s’applique à l’aperçu et à toute la série imprimée. Le logo et les informations restent du texte et des éléments HTML/CSS : les maquettes illustrées ne sont pas utilisées comme fonds contenant de fausses données.
+
+La photo récente/personnelle jointe au formulaire est reconnue. Si le stage ne demande aucune photo, un champ séparé permet de joindre une photo pour le badge. L’organisateur peut choisir une image déjà jointe ou ajouter une photo pour un ancien dossier depuis la fenêtre des badges. JPG, PNG et WEBP, 5 MB maximum ; pas de PDF comme portrait. La nouvelle photo est conservée sans supprimer les anciens justificatifs (15 documents maximum).
+
+Les images restent dans le bucket privé. Le chargement utilise l’accès authentifié soumis à RLS, avec des URL blob temporaires révoquées à la fermeture. Le point d’entrée serveur `mode=badge-photo` vérifie le compte approuvé, la propriété du stage et l’absence de suppression avant de choisir ou joindre une photo. Une comparaison des documents empêche de remplacer une modification simultanée. L’impression attend le chargement de toutes les photos ; les cartes sans photo doivent être complétées. Le format reste 85 × 120 mm et 4 badges par feuille A4.
