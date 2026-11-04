@@ -80,3 +80,9 @@ Appliquer `database/training_staff.sql` après les migrations précédentes. La 
 ## Terminologie et suivi
 
 L’application utilise « participants » / « المشاركون » dans son titre, ses listes et ses exports. La rubrique, les filtres, les champs et les colonnes de présence au stage sont retirés, y compris des exports PDF et Excel. Les documents scolaires demandés pour une inscription restent configurables par stage.
+
+## Reçu avec QR personnel
+
+Après un dépôt réussi, le participant reçoit son code personnel en texte sélectionnable avec le bouton « نسخ الرمز », ainsi qu’un QR téléchargeable. Les deux représentent la même référence de dossier. Le QR ouvre l’application avec cette référence ; l’organisateur doit se connecter et ne peut ouvrir que les dossiers de ses propres stages. Une fois connecté, le dossier s’ouvre automatiquement pour consultation et validation manuelle. Aucun nom, numéro de téléphone ou justificatif n’est encodé dans le QR ; les droits Supabase restent inchangés. Le QR est généré localement, sans service tiers.
+
+Depuis un dossier existant, « عرض رمز المشارك و QR » retrouve également ces deux formats et permet de télécharger le QR sans refaire l’inscription.

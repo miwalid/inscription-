@@ -1,0 +1,11 @@
+import {useEffect,useRef,useState} from 'react';
+import QRCode from 'qrcode';
+import {Copy,Download} from 'lucide-react';
+import {formatRegistrationCode,normalizeRegistrationCode,registrationQrUrl} from './registrationCode';
+export default function RegistrationReceipt({code,onNotice}:{code:string;onNotice:(message:string)=>void}){
+ const[qr,setQr]=useState(''),[qrError,setQrError]=useState(false),[retry,setRetry]=useState(0);const input=useRef<HTMLInputElement>(null);const formatted=formatRegistrationCode(normalizeRegistrationCode(code));
+ useEffect(()=>{let disposed=false;setQr('');setQrError(false);async function generate(){try{const url=registrationQrUrl(code,location.href);const image=await QRCode.toDataURL(url,{width:280,margin:4,errorCorrectionLevel:'M',color:{dark:'#123d2b',light:'#ffffff'}});if(!disposed)setQr(image)}catch{if(!disposed)setQrError(true)}}generate();return()=>{disposed=true}},[code,retry]);
+ async function copy(){try{await navigator.clipboard.writeText(formatted);onNotice('تم نسخ الرمز الشخصي')}catch{input.current?.focus();input.current?.select();onNotice('تم تحديد الرمز. اختر «نسخ» من جهازك.')}}
+ return <div className="registration-receipt"><h3>رمزك الشخصي</h3><p className="receipt-help">يمكنك تقديم رمز QR أو الرمز المكتوب للمنظم.</p>{qr?<img className="receipt-qr" src={qr} alt="رمز QR الشخصي لملف التسجيل" width={280} height={280}/>:qrError?<div className="receipt-qr-error" role="status"><p>تعذر تجهيز رمز QR. يبقى الرمز المكتوب صالحاً.</p><button type="button" className="text-button" onClick={()=>setRetry(i=>i+1)}>إعادة المحاولة</button></div>:<p role="status">جارٍ تجهيز رمز QR…</p>}
+ <label className="receipt-code-label">الرمز الشخصي<input ref={input} className="registration-code" aria-label="الرمز الشخصي" dir="ltr" value={formatted} readOnly onFocus={e=>e.currentTarget.select()}/></label><div className="receipt-actions"><button type="button" className="secondary" onClick={copy}><Copy size={16}/>نسخ الرمز</button>{qr&&<a className="secondary" href={qr} download={'QR-'+formatted+'.png'}><Download size={16}/>تنزيل QR</a>}</div><p>احتفظ بالرمز أو نزّل صورة QR وقدّمه للمنظم لفتح ملفك ومراجعته. فتح الملف عبر QR يتطلب تسجيل دخول المنظم.</p></div>
+}
