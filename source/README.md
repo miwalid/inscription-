@@ -68,3 +68,11 @@ L’aperçu « معاينة ورقة A4 » montre la feuille complète utilisée
 Pendant l’ouverture de la fenêtre des badges, une règle temporaire définit aussi la page par défaut en A4 portrait sans marges CSS supplémentaires. Cela évite l’interférence de la règle A4 paysage des listes, y compris dans les navigateurs ignorant les pages nommées. La fermeture rétablit les réglages des listes. Les marges de sécurité sont incluses dans la feuille elle-même. Dans le dialogue d’impression : A4 portrait, 100 %, une page par feuille, sans en-tête ni pied de page.
 
 La zone d’impression masque aussi le conteneur complet de l’interface afin de ne pas générer une première page blanche. Les cartes des pages suivantes ne sont pas découpées par un masque de la feuille.
+
+## Responsables et ateliers
+
+La rubrique « المسؤولون » permet à l’organisateur de gérer, pour chacun de ses stages, les noms et prénoms, la photo et l’atelier animé des responsables. Les fiches rappellent le titre, la description, le lieu et les dates du stage. Recherche, filtre par stage, modification et suppression réversible sont disponibles. La rubrique ne crée pas de compte de connexion pour les responsables et n’affecte pas les dossiers, paiements ou présences des stagiaires.
+
+Appliquer `database/training_staff.sql` après les migrations précédentes. La table `training_staff` et le bucket privé `training-staff-photos` limitent les lectures et écritures au propriétaire approuvé du stage par RLS. Les photos JPG/PNG/WEBP de 5 MB maximum sont privées ; chaque nouveau fichier reçoit un chemin propre au responsable. Le changement de photo conserve les anciennes images, et la suppression réversible masque leurs téléchargements jusqu’à restauration.
+
+« بطاقات المسؤولين » propose quatre designs exclusifs : الشريط، الإطار، التباين، العمودي. Ils portent la mention « فريق التأطير », la photo, le nom, l’atelier et les informations du stage. Leur préférence est mémorisée séparément de celle des trois modèles des stagiaires. Aperçus individuel/A4 et impression 4 par feuille, 85 × 120 mm, A4 portrait 100 %, une page par feuille, sans en-tête ni pied de page. `tests/staff_scope.sql` vérifie les deux propriétaires, les fichiers privés, les écritures refusées, la suppression/restauration et l’absence d’accès anonyme dans une transaction annulée.
