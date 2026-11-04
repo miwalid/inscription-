@@ -136,3 +136,8 @@ Validation : `tests/staff_group_scope.sql` (ROLLBACK) couvre sauvegarde, désaff
 ## Repère couleur de groupe agrandi
 
 Le repère de couleur est un disque de rayon 10 mm (au lieu de 8 mm), centré verticalement sur le bord droit du badge. Le disque de 20 mm dépasse de 6 mm vers la droite : environ trois quarts de sa surface restent visibles. La règle est commune aux dix modèles participants et aux quatre modèles responsables. Les noms proches du repère sont ajustés pour préserver leur lisibilité ; la couleur est toujours celle du groupe, sans nom, numéro ou effectif de groupe sur le badge. Les dimensions du badge et les quatre emplacements par feuille A4 restent inchangés.
+
+
+### Demi-cercle de groupe, rayon conservé
+
+Le repère couleur est désormais un demi-cercle centré sur le bord droit, de largeur 10 mm et hauteur 20 mm : le rayon de 10 mm est conservé. Cette règle commune s’applique aux participants et responsables, sans texte de groupe sur le badge. Elle remplace la visibilité aux trois quarts décrite ci-dessus.
