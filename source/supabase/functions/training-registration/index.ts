@@ -42,8 +42,8 @@ Deno.serve(async(req:Request)=>{
  try{
  for(const x of files){const {error}=await client.storage.from('training-documents').upload(x.key,x.file,{contentType:x.type,upsert:false});if(error)throw error;uploaded.push(x.key)}
  const record={id,stage_id:stageId,firstName,lastName,phone,birth,gender,fee:stage.fee,decision:'pending',paid:false,present:false,files:files.map(({file,...x})=>x)};
- const {error}=await client.from('training_applicants').insert(record);if(error){if(error.code==='23505')throw Error('تم تسجيل هذا المترشح سابقاً في هذا التربص');throw error}
- return json({ok:true});
+ const {data:registered,error}=await client.from('training_applicants').insert(record).select('personal_code').single();if(error){if(error.code==='23505')throw Error('تم تسجيل هذا المترشح سابقاً في هذا التربص');throw error}
+ return json({ok:true,personal_code:registered!.personal_code});
  }catch(e){if(uploaded.length)await client.storage.from('training-documents').remove(uploaded);throw e}
  }catch(e:any){const known=String(e.message||'');if(/[\u0600-\u06ff]/.test(known))return json({error:known},400);console.error('registration failure',e.code||e.name||'error');return json({error:'تعذر إتمام العملية. حاول مرة أخرى.'},500)}
 });

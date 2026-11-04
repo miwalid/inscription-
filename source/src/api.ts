@@ -1,3 +1,4 @@
+import {normalizeRegistrationCode} from './registrationCode';
 import {createClient} from '@supabase/supabase-js';
 const url=import.meta.env.VITE_SUPABASE_URL;const key=import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 export const configured=!!url&&!!key;
@@ -11,6 +12,13 @@ if(path.startsWith('/api/register')){
  const headers:Record<string,string>={apikey:key};if(session)headers.Authorization='Bearer '+session.access_token;
  const query=path.includes('?')?path.slice(path.indexOf('?')):'';
  return fetch(endpoint()+query,{...init,headers:{...headers,...init?.headers},credentials:'omit'});
+}
+if(path.startsWith('/api/lookup?')&&!init){
+ const code=normalizeRegistrationCode(new URLSearchParams(path.split('?')[1]).get('code')||'');
+ if(!/^[A-F0-9]{12}$/.test(code))return response({error:'تحقق من الرمز الشخصي: 12 حرفاً أو رقماً.'},400);
+ const {data,error}=await supabase.from('training_applicants').select('*').eq('personal_code',code).is('deleted_at',null).maybeSingle();
+ if(error)throw error;if(!data)return response({error:'لا يوجد ملف متاح بهذا الرمز ضمن تربصاتك.'},404);
+ const {stage_id,created_at,...a}=data;return response({...a,stageId:stage_id,created:created_at});
 }
 if(path==='/api/manage'&&!init){
  const [stages,people]=await Promise.all([supabase.from('training_stages').select('*').order('created_at',{ascending:false}),supabase.from('training_applicants').select('*').order('created_at',{ascending:false})]);

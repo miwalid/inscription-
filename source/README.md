@@ -43,4 +43,12 @@ La présentation validée utilise des cartes en nuances de vert, jaune et rouge,
 
 Le formulaire demande le sexe (ذكر / أنثى). Les dossiers antérieurs conservent une valeur non précisée : l’organisateur doit la renseigner et enregistrer le dossier avant de générer son badge. Aucune valeur n’est déduite du nom.
 
-« البطاقة » ouvre une carte individuelle ; « بطاقات المشاركين » prépare les badges de la liste filtrée. Chaque badge mesure 85 × 120 mm en portrait et contient le prénom, le nom, le titre et les dates du stage ainsi que مدرب ou مدربة. La prévisualisation permet d’imprimer ou de sauvegarder en PDF, avec une page par badge. Sélectionner une échelle de 100 %. Appliquer `database/registration_gender.sql` après les schémas précédents pour une installation neuve.
+« البطاقة » ouvre une carte individuelle ; « بطاقات المشاركين » prépare les badges de la liste filtrée. Chaque badge mesure 85 × 120 mm en portrait et contient le prénom, le nom, le titre et les dates du stage ainsi que مدرب ou مدربة. La prévisualisation permet d’imprimer ou de sauvegarder en PDF, avec 4 badges par feuille A4 (2 colonnes et 2 lignes), au format individuel inchangé de 85 × 120 mm. Sélectionner une échelle de 100 %. Appliquer `database/registration_gender.sql` après les schémas précédents pour une installation neuve.
+
+## Référence personnelle et accès direct au dossier
+
+Appliquer `database/registration_personal_code.sql` après les migrations précédentes. Chaque inscription reçoit automatiquement un code unique de 12 caractères, présenté en trois groupes. Les anciens dossiers reçoivent aussi un code. La réponse de dépôt ne renvoie que la confirmation et ce code ; le candidat est invité à le conserver.
+
+L’organisateur connecté saisit ce code dans « فتح ملف بالرمز الشخصي ». La recherche est exacte, tolère les minuscules, les espaces et les tirets, exclut les dossiers supprimés et reste soumise aux règles de propriété Supabase. Le code ne donne aucun accès public et n’accepte pas automatiquement le candidat : le dossier s’ouvre pour examen, décision et enregistrement du paiement selon le fonctionnement existant.
+
+Les documents non obligatoires restent disponibles sans la mention « اختياري ». Les documents obligatoires gardent la mention « إجباري » et la validation de leur présence. Pour les badges, sélectionner A4 portrait, 100 %, sans en-tête ni pied de page ; le dernier feuillet peut contenir moins de 4 badges.
