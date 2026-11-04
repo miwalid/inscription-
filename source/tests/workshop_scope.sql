@@ -1,0 +1,34 @@
+begin;
+create temporary table qa_workshop on commit drop as select (select user_id from public.training_admins order by created_at limit 1) actor,gen_random_uuid() other,gen_random_uuid() stage_a,gen_random_uuid() stage_b;
+grant select on qa_workshop to authenticated;
+insert into auth.users(id,email,role,aud) select other,'qa-'||other::text||'@example.invalid','authenticated','authenticated' from qa_workshop;
+insert into public.training_admins(user_id) select other from qa_workshop;
+insert into public.training_stages(id,title,place,start,"end",fee,owner_id) select stage_a,'Workshop test A','Test',date '2026-12-05',date '2026-12-06',30,actor from qa_workshop union all select stage_b,'Workshop test B','Test',date '2026-12-05',date '2026-12-06',30,other from qa_workshop;
+insert into public.training_applicants(stage_id,"firstName","lastName",phone,birth,fee,gender,decision,paid,deleted_at) select stage_a,'Test',i::text,'2000000'||i,date '2000-01-01',30,case when i<=3 or i in(7,8) then 'male' else 'female' end,case when i=6 then 'pending' when i=7 then 'rejected' else 'accepted' end,i<=2,case when i=8 then now() else null end from qa_workshop cross join generate_series(1,8) i;
+insert into public.training_applicants(stage_id,"firstName","lastName",phone,birth,fee,gender) select stage_b,'Foreign','Test','20000009',date '2000-01-01',30,'male' from qa_workshop;
+set local role authenticated;
+select set_config('request.jwt.claims',(select jsonb_build_object('sub',actor,'role','authenticated')::text from qa_workshop),true);
+do $$ declare q record;plan jsonb;bad jsonb;before_state jsonb;ws jsonb='[{"name":"A","color":"#167348"},{"name":"B","color":"#D13B46"}]';blocked boolean;sc text;begin
+ select * into q from qa_workshop;
+ foreach sc in array array['accepted','confirmed','all'] loop
+  select jsonb_agg(jsonb_build_object('id',id,'gender',gender,'workshop_index',1+(rn-1)%2)) into plan from(select id,gender,row_number()over(partition by gender order by id)rn from public.training_applicants where stage_id=q.stage_a and deleted_at is null and (sc='all' or decision='accepted' and (sc<>'confirmed' or paid))) x;
+  perform public.assign_training_workshops(q.stage_a,ws,plan,sc);
+  if (select count(*) from public.training_applicants where stage_id=q.stage_a and workshop_index is not null)<>jsonb_array_length(plan) then raise exception 'Scope membership mismatch';end if;
+  if exists(select 1 from public.training_applicants where stage_id=q.stage_a and deleted_at is not null and workshop_index is not null) then raise exception 'Deleted person assigned';end if;
+ end loop;
+ select jsonb_agg(jsonb_build_object('id',id,'gender',gender,'workshop_index',workshop_index)order by id) into before_state from public.training_applicants where stage_id=q.stage_a;
+ select jsonb_agg(x||'{"workshop_index":1}'::jsonb) into bad from jsonb_array_elements(plan)x;
+ blocked=false;begin perform public.assign_training_workshops(q.stage_a,ws,bad,'all');exception when raise_exception then blocked=true;end;if not blocked then raise exception 'Unbalanced assignment accepted';end if;
+ blocked=false;begin perform public.assign_training_workshops(q.stage_b,ws,plan,'all');exception when raise_exception then blocked=true;end;if not blocked then raise exception 'Foreign stage accepted';end if;
+ blocked=false;begin perform public.assign_training_workshops(q.stage_a,ws,plan-0,'all');exception when others then blocked=true;end;if not blocked then raise exception 'Incomplete assignment accepted';end if;
+ select jsonb_agg(x||jsonb_build_object('gender',case when x->>'gender'='male' then 'female' else 'male' end))into bad from jsonb_array_elements(plan)x;
+ blocked=false;begin perform public.assign_training_workshops(q.stage_a,ws,bad,'all');exception when raise_exception then blocked=true;end;if not blocked then raise exception 'Stale gender accepted';end if;
+ if before_state is distinct from(select jsonb_agg(jsonb_build_object('id',id,'gender',gender,'workshop_index',workshop_index)order by id) from public.training_applicants where stage_id=q.stage_a) then raise exception 'Failure caused partial changes';end if;
+ if (select count(*) from public.training_applicants where stage_id=q.stage_a and paid)<>2 then raise exception 'Payment changed';end if;
+ if (select workshops from public.training_stages where id=q.stage_a)<>ws then raise exception 'Workshop colors not saved';end if;
+ if (select count(*) from public.training_stages where id=q.stage_b)<>0 then raise exception 'Foreign stage visible';end if;
+ if has_function_privilege('anon','public.assign_training_workshops(uuid,jsonb,jsonb,text)','execute') then raise exception 'Anonymous execute allowed';end if;
+end $$;
+reset role;
+rollback;
+select 'PASS: 3 scopes, balanced allocation persistence, colors, foreign ownership, missing participants, stale gender, atomic failure and unchanged payments' as result;
