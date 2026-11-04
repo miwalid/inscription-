@@ -100,3 +100,10 @@ Vérification : compilation TypeScript et production, décodage réel d’un QR 
 ## Paiement indépendant de la décision
 
 La case de paiement et le bouton de la rubrique الخلاص sont disponibles pour un dossier en attente, accepté ou refusé. Modifier la décision conserve le paiement enregistré. Le client écrit paid indépendamment de decision ; la migration database/independent_payment.sql retire uniquement l’ancienne contrainte qui imposait l’acceptation avant paiement. Les paiements déjà enregistrés et les règles d’accès par organisateur restent inchangés. Le compteur et le filtre des inscriptions confirmées exigent à la fois decision=accepted et paid=true. Le filtre « في انتظار الخلاص » affiche tous les dossiers actifs non payés, indépendamment de la décision. Les totaux restants explicitement indiqués « pour les dossiers acceptés » gardent ce périmètre.
+
+
+## Dix modèles de badges participants
+
+Les trois modèles existants sont complétés par les sept maquettes approuvées : 4 نباتي (botanique), 5 هندسي (géométrique), 6 شمسي (solaire), 7 شريط عمودي (ruban vertical), 8 دوائر (cercles), 9 آرت ديكو et 10 أمواج (vagues). Les décorations sont vectorielles ; le logo officiel et les photos privées restent des images distinctes. La préférence du modèle participant est conservée séparément de celle des responsables, dont les quatre modèles restent disponibles uniquement dans leur propre rubrique.
+
+Tous les modèles conservent les dimensions physiques 85 × 120 mm, les photos, les noms ajustés automatiquement, مدرب / مدربة et les informations du stage. Ils utilisent les mêmes feuilles A4 de quatre badges (deux lignes et deux colonnes) ; cinq participants donnent deux feuilles de 4 puis 1 badge. Vérifications : compilation TypeScript et production, sélection des sept modèles et persistance, photos, noms longs, rôles, positions et dimensions des badges sur chaque feuille, sélecteur à 360 px sans débordement.
