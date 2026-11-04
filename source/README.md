@@ -120,3 +120,14 @@ Le tableau des participants, leur dossier et les exports Excel utilisent le term
 Compatibilité : les colonnes historiques `training_stages.workshops`, `training_applicants.workshop_index` et la RPC `assign_training_workshops` de `database/workshop_allocation.sql` stockent désormais les groupes de participants. Aucun lien avec `training_staff.workshop` n’est créé. L’adaptateur `participantGroups` affiche les anciennes attributions comme groupes numérotés en conservant les couleurs et les membres jusqu’à une nouvelle sauvegarde. La RPC existante applique toujours RLS, vérification du propriétaire, validation du périmètre complet et de l’équilibre, avec sauvegarde atomique. Aucun paiement ou statut n’est modifié.
 
 Validation : compilation TypeScript et production ; `node tests/workshopAllocation.mjs` pour 13 500 répartitions ; tests SQL de sécurité et de sauvegarde dans `tests/workshop_scope.sql`. Interface vérifiée avec 13 participants (7 hommes, 6 femmes), choix de 5 groupes et sauvegarde de 5 groupes de 2 ou 3 personnes, avec les genres équilibrés et 0 personne non attribuée.
+
+
+## Affectation des responsables aux groupes
+
+Dans المسؤولون, chaque carte de responsable propose « تعيين المجموعة » avec les groupes du même stage et une option « دون مجموعة ». La sélection est sauvegardée immédiatement ; plusieurs responsables peuvent appartenir au même groupe. Le champ est aussi disponible dans le formulaire d’ajout/modification et se réinitialise si le stage change. Les groupes doivent être créés et leur répartition enregistrée avant l’affectation des responsables. Aucune affectation de responsables existants n’est choisie automatiquement.
+
+Les quatre modèles de badges de responsables reprennent la couleur actuelle du groupe par le même demi-cercle centré à droite que les participants, sans nom, numéro ou effectif de groupe. L’atelier animé reste une information distincte. Un responsable sans groupe n’a pas de demi-cercle.
+
+Appliquer `database/staff_group_assignment.sql` après `database/workshop_allocation.sql` : ajout de `training_staff.group_index`, contrôle que le groupe existe dans le stage du responsable, et suppression de l’affectation lorsque le nombre de groupes est réduit au-dessous de l’index attribué. Les responsables devront alors être réaffectés. Les règles RLS de propriétaire du stage restent inchangées.
+
+Validation : `tests/staff_group_scope.sql` (ROLLBACK) couvre sauvegarde, désaffectation, rejet d’un groupe inexistant, couleur partagée, retrait d’un groupe, isolation des organisateurs et confidentialité des photos. L’interface a été vérifiée avec des responsables fictifs, affectation au groupe 2 puis groupe 3 et actualisation des couleurs correspondantes ; les quatre modèles de responsables ont été contrôlés sans débordement, demi-cercle au centre et aucun texte de groupe sur le badge. Compilation TypeScript et production réussies.
