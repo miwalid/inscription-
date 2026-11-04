@@ -32,7 +32,7 @@ if(path==='/api/manage'&&init){
  const {error}=await supabase.from('training_stages').upsert(stage).select('id').single();if(error)throw error;
  }else if(type==='applicant'){
  if(data.gender!=null&&!['male','female'].includes(data.gender))throw Error('اختر الجنس: ذكر أو أنثى.');
- const {error}=await supabase.from('training_applicants').update({gender:data.gender??null,decision:data.decision,paid:data.decision==='accepted'&&!!data.paid,present:!!data.present}).eq('id',data.id).is('deleted_at',null).select('id').single();if(error)throw error;
+ const {error}=await supabase.from('training_applicants').update({gender:data.gender??null,decision:data.decision,paid:data.decision==='accepted'&&!!data.paid}).eq('id',data.id).is('deleted_at',null).select('id').single();if(error)throw error;
  }else if(type==='delete_applicant'||type==='restore_applicant'){
  let q=supabase.from('training_applicants').update({deleted_at:type==='delete_applicant'?new Date().toISOString():null}).eq('id',data.id);
  q=type==='delete_applicant'?q.is('deleted_at',null):q.not('deleted_at','is',null);

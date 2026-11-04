@@ -1,6 +1,6 @@
-# منصة تسجيل المتربصين
+# منصة تسجيل المشاركين
 
-Application arabe autonome : inscriptions à plusieurs stages, justificatifs privés, validation, paiement intégral, présence, QR code, export Excel et impression PDF.
+Application arabe autonome : inscriptions à plusieurs stages, justificatifs privés, validation, paiement intégral, QR code, export Excel et impression PDF.
 
 ## Exécution
 
@@ -13,7 +13,7 @@ Node.js 22 ou supérieur. Copier `.env.example` vers `.env` et renseigner l'URL 
 - Bucket privé `training-documents` ; accès temporaire aux documents réservé à l'organisateur.
 - Fonction `training-registration` : formulaire public, vérification des informations et des justificatifs, absence de frais dans la réponse publique, blocage des doublons et nettoyage des fichiers en cas d'échec.
 - La clé privilégiée reste exclusivement dans les variables du serveur Supabase.
-- Chaque dossier conserve le montant applicable à son dépôt. Les paiements et la présence sont enregistrés séparément.
+- Chaque dossier conserve le montant applicable à son dépôt. Les paiements sont enregistrés par l’organisateur.
 
 Le dossier `database/` décrit le schéma installé. Les migrations du projet Supabase constituent l'historique appliqué. La table `training_bootstrap` réserve l'activation initiale ; son secret n'est pas stocké dans ce dépôt. Aucun compte ChatGPT n'est nécessaire pour utiliser cette application.
 
@@ -23,7 +23,7 @@ Le dossier `database/` décrit le schéma installé. Les migrations du projet Su
 2. Créer un stage, sélectionner les pièces et cocher celles qui sont obligatoires.
 3. Partager son lien ou QR code avec les candidats.
 4. Examiner les dossiers ; accepter ou refuser.
-5. Enregistrer le paiement intégral pour confirmer l'inscription, puis la présence au stage.
+5. Enregistrer le paiement intégral pour confirmer l'inscription.
 
 Les exports respectent les filtres affichés. PDF utilise la fonction « Enregistrer au format PDF » du navigateur. Les justificatifs acceptés sont PDF, PNG, JPEG et WEBP, jusqu'à 5 MB par fichier et 25 MB par dossier.
 
@@ -71,8 +71,12 @@ La zone d’impression masque aussi le conteneur complet de l’interface afin d
 
 ## Responsables et ateliers
 
-La rubrique « المسؤولون » permet à l’organisateur de gérer, pour chacun de ses stages, les noms et prénoms, la photo et l’atelier animé des responsables. Les fiches rappellent le titre, la description, le lieu et les dates du stage. Recherche, filtre par stage, modification et suppression réversible sont disponibles. La rubrique ne crée pas de compte de connexion pour les responsables et n’affecte pas les dossiers, paiements ou présences des stagiaires.
+La rubrique « المسؤولون » permet à l’organisateur de gérer, pour chacun de ses stages, les noms et prénoms, la photo et l’atelier animé des responsables. Les fiches rappellent le titre, la description, le lieu et les dates du stage. Recherche, filtre par stage, modification et suppression réversible sont disponibles. La rubrique ne crée pas de compte de connexion pour les responsables et n’affecte pas les dossiers ou paiements des participants.
 
 Appliquer `database/training_staff.sql` après les migrations précédentes. La table `training_staff` et le bucket privé `training-staff-photos` limitent les lectures et écritures au propriétaire approuvé du stage par RLS. Les photos JPG/PNG/WEBP de 5 MB maximum sont privées ; chaque nouveau fichier reçoit un chemin propre au responsable. Le changement de photo conserve les anciennes images, et la suppression réversible masque leurs téléchargements jusqu’à restauration.
 
-« بطاقات المسؤولين » propose quatre designs exclusifs : الشريط، الإطار، التباين، العمودي. Ils portent la mention « فريق التأطير », la photo, le nom, l’atelier et les informations du stage. Leur préférence est mémorisée séparément de celle des trois modèles des stagiaires. Aperçus individuel/A4 et impression 4 par feuille, 85 × 120 mm, A4 portrait 100 %, une page par feuille, sans en-tête ni pied de page. `tests/staff_scope.sql` vérifie les deux propriétaires, les fichiers privés, les écritures refusées, la suppression/restauration et l’absence d’accès anonyme dans une transaction annulée.
+« بطاقات المسؤولين » propose quatre designs exclusifs : الشريط، الإطار، التباين، العمودي. Ils portent la mention « فريق التأطير », la photo, le nom, l’atelier et les informations du stage. Leur préférence est mémorisée séparément de celle des trois modèles des participants. Aperçus individuel/A4 et impression 4 par feuille, 85 × 120 mm, A4 portrait 100 %, une page par feuille, sans en-tête ni pied de page. `tests/staff_scope.sql` vérifie les deux propriétaires, les fichiers privés, les écritures refusées, la suppression/restauration et l’absence d’accès anonyme dans une transaction annulée.
+
+## Terminologie et suivi
+
+L’application utilise « participants » / « المشاركون » dans son titre, ses listes et ses exports. La rubrique, les filtres, les champs et les colonnes de présence au stage sont retirés, y compris des exports PDF et Excel. Les documents scolaires demandés pour une inscription restent configurables par stage.
