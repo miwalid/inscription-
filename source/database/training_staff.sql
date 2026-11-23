@@ -23,3 +23,11 @@ create policy training_staff_update on public.training_staff for update to authe
 insert into storage.buckets(id,name,public,file_size_limit,allowed_mime_types) values('training-staff-photos','training-staff-photos',false,5242880,array['image/jpeg','image/png','image/webp']);
 create policy training_staff_photos_read on storage.objects for select to authenticated using(bucket_id='training-staff-photos' and exists(select 1 from public.training_staff t join public.training_stages s on s.id=t.stage_id where t.id::text=split_part(name,'/',1) and t.deleted_at is null and s.owner_id=(select auth.uid())));
 create policy training_staff_photos_insert on storage.objects for insert to authenticated with check(bucket_id='training-staff-photos' and exists(select 1 from public.training_staff t join public.training_stages s on s.id=t.stage_id where t.id::text=split_part(name,'/',1) and t.deleted_at is null and s.owner_id=(select auth.uid())));
+
+-- Cleanup only unattached photos in a staff folder owned by this organizer.
+-- A currently saved portrait (including a response-lost save) cannot be deleted.
+create policy training_staff_photos_cleanup on storage.objects for delete to authenticated using(
+ bucket_id='training-staff-photos'
+ and exists(select 1 from public.training_staff t join public.training_stages s on s.id=t.stage_id where t.id::text=split_part(name,'/',1) and t.deleted_at is null and s.owner_id=(select auth.uid()))
+ and not exists(select 1 from public.training_staff t where t.photo_key=objects.name)
+);

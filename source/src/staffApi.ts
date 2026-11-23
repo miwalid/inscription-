@@ -1,3 +1,4 @@
+import {loadAllRows} from './pagination';
 import {supabase} from './api';
 import type {BadgeEntry} from './Badge';
 import type {BadgeFile} from './badgePhoto';
@@ -9,12 +10,20 @@ export const newStaff=(stageId=''):StaffMember=>({id:staffId(),stage_id:stageId,
 export const staffPhotoFiles=(person:StaffMember):BadgeFile[]=>person.photo_key?[{key:person.photo_key,type:person.photo_type||'image/jpeg',name:'صورة المسؤول',role:'portrait'}]:[];
 export const staffGroup=(person:StaffMember,stage?:StaffStage)=>person.group_index?participantGroups(stage)[person.group_index-1]:undefined;
 export function staffBadgeEntry(person:StaffMember,stage:StaffStage):BadgeEntry{return{person:{id:person.id,firstName:person.first_name,lastName:person.last_name,gender:'male',kind:'staff',workshop:person.workshop,assignedWorkshop:staffGroup(person,stage),files:staffPhotoFiles(person)},stage}}
-export async function loadStaff(){const {data,error}=await supabase.from('training_staff').select('*').order('created_at',{ascending:false});if(error)throw error;return data as StaffMember[]}
+export async function loadStaff(){return loadAllRows<StaffMember>((from,to)=>supabase.from('training_staff').select('*',{count:'exact'}).order('created_at',{ascending:false}).order('id',{ascending:false}).range(from,to))}
 export async function saveStaff(person:StaffMember){if(!person.first_name.trim()||!person.last_name.trim()||!person.workshop.trim()||!person.stage_id)throw Error('أكمل الاسم واللقب والورشة واختر التربص.');const {data,error}=await supabase.from('training_staff').upsert({id:person.id,stage_id:person.stage_id,first_name:person.first_name.trim(),last_name:person.last_name.trim(),workshop:person.workshop.trim(),group_index:person.group_index??null}).select('*').single();if(error)throw error;return data as StaffMember}
 export async function setStaffDeleted(person:StaffMember,deleted:boolean){let query=supabase.from('training_staff').update({deleted_at:deleted?new Date().toISOString():null}).eq('id',person.id);query=deleted?query.is('deleted_at',null):query.not('deleted_at','is',null);const {error}=await query.select('id').single();if(error)throw error}
 export async function uploadStaffPhoto(id:string,file:File){if(!['image/jpeg','image/png','image/webp'].includes(file.type)||!file.size||file.size>5*1024*1024)throw Error('اختر صورة JPG أو PNG أو WEBP لا تتجاوز 5 MB.');const bitmap=await createImageBitmap(file).catch(()=>{throw Error('تعذر قراءة الصورة. اختر صورة صالحة.')});bitmap.close();
  const key=id+'/'+staffId();const {error:uploadError}=await supabase.storage.from('training-staff-photos').upload(key,file,{contentType:file.type,upsert:false});if(uploadError)throw uploadError;
- const {data,error}=await supabase.from('training_staff').update({photo_key:key,photo_type:file.type}).eq('id',id).is('deleted_at',null).select('*').single();if(error)throw error;return data as StaffMember}
+ let rejected=false;try{
+ const {data,error}=await supabase.from('training_staff').update({photo_key:key,photo_type:file.type}).eq('id',id).is('deleted_at',null).select('*').single();if(error){rejected=!!error.code;throw error}return data as StaffMember;
+ }catch(error){
+ try{const {data}=await supabase.from('training_staff').select('*').eq('id',id).is('deleted_at',null).single();if(data?.photo_key===key)return data as StaffMember}catch{/* Resolve an ambiguous response conservatively via the DELETE policy. */}
+ if(!rejected)throw Error('تعذر تأكيد حفظ الصورة بسبب الاتصال. أعد تحميل الملف للتحقق قبل إعادة المحاولة.');
+ // DELETE policy protects any photo already referenced by a saved staff record,
+ // including a successful update whose response was lost in transit.
+ try{const cleanup=await supabase.storage.from('training-staff-photos').remove([key]);if(cleanup.error)throw cleanup.error}catch{throw Error('تعذر إتمام حفظ الصورة وتنظيف الملف المؤقت. أعد المحاولة أو تحقق من الاتصال.')}throw error;
+ }}
 export async function downloadStaffPhoto(key:string){const {data,error}=await supabase.storage.from('training-staff-photos').download(key);if(error)throw error;if(!data||!['image/jpeg','image/png','image/webp'].includes(data.type)||data.size>5*1024*1024)throw Error('تعذر تحميل الصورة.');return URL.createObjectURL(data)}
 export async function saveStaffBadgePhoto(id:string,source:File|string){if(source instanceof File)return staffPhotoFiles(await uploadStaffPhoto(id,source));const {data,error}=await supabase.from('training_staff').select('*').eq('id',id).is('deleted_at',null).single();if(error)throw error;if(data.photo_key!==source)throw Error('الصورة غير متاحة.');return staffPhotoFiles(data)}
 

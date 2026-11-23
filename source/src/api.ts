@@ -1,3 +1,4 @@
+import {loadAllRows} from './pagination';
 import {normalizeRegistrationCode} from './registrationCode';
 import {createClient} from '@supabase/supabase-js';
 const url=import.meta.env.VITE_SUPABASE_URL;const key=import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
@@ -21,9 +22,9 @@ if(path.startsWith('/api/lookup?')&&!init){
  const {stage_id,created_at,...a}=data;return response({...a,stageId:stage_id,created:created_at});
 }
 if(path==='/api/manage'&&!init){
- const [stages,people]=await Promise.all([supabase.from('training_stages').select('*').order('created_at',{ascending:false}),supabase.from('training_applicants').select('*').order('created_at',{ascending:false})]);
- if(stages.error)throw stages.error;if(people.error)throw people.error;
- return response({stages:stages.data,applicants:people.data.map(({stage_id,created_at,...a}:any)=>({...a,stageId:stage_id,created:created_at}))});
+ const read=(table:string)=>loadAllRows<any>((from,to)=>supabase.from(table).select('*',{count:'exact'}).order('created_at',{ascending:false}).order('id',{ascending:false}).range(from,to));
+ const [stages,people]=await Promise.all([read('training_stages'),read('training_applicants')]);
+ return response({stages,applicants:people.map(({stage_id,created_at,...a}:any)=>({...a,stageId:stage_id,created:created_at}))});
 }
 if(path==='/api/manage'&&init){
  const {type,data}=JSON.parse(String(init.body));

@@ -141,3 +141,15 @@ Le repère de couleur est un disque de rayon 10 mm (au lieu de 8 mm), centré ve
 ### Demi-cercle de groupe, rayon conservé
 
 Le repère couleur est désormais un demi-cercle centré sur le bord droit, de largeur 10 mm et hauteur 20 mm : le rayon de 10 mm est conservé. Cette règle commune s’applique aux participants et responsables, sans texte de groupe sur le badge. Elle remplace la visibilité aux trois quarts décrite ci-dessus.
+
+
+## Corrections de fiabilité — novembre 2026
+
+- Chargement complet des stages, participants et responsables par pages de 500, ordre stable créé/id. La taille réellement retournée par le serveur est respectée ; un changement de total, une page manquante ou un doublon déclenche une actualisation au lieu de produire des compteurs ou exports partiels.
+- Une sauvegarde réussie suivie d’un échec d’actualisation est signalée comme telle, avec une commande de rechargement. Les exports, distributions et badges à partir de listes périmées sont bloqués jusqu’au rechargement.
+- Dans le studio de badges, les images sont décodées avant d’être déclarées prêtes. Une option explicite permet d’imprimer uniquement les badges dont la photo est disponible ; la zone imprimable les regroupe à nouveau par quatre, sans trous. Les dossiers exclus restent accessibles pour compléter leur photo.
+- Chaque carte de stage indique le nombre de participants sans groupe et renvoie vers la répartition existante. Aucune répartition réelle n’est changée automatiquement.
+- Après un refus explicite de sauvegarde d’une photo de responsable, le nouveau téléversement est nettoyé via Storage API. Une politique DELETE limite cette opération aux fichiers non référencés du responsable d’un stage possédé par l’organisateur ; les portraits sauvegardés et les autres propriétaires restent protégés. En cas de réponse réseau ambiguë, la référence est relue et aucun fichier n’est supprimé sans refus explicite. La migration serveur `staff_photo_cleanup` correspond à la politique ajoutée à `database/training_staff.sql`.
+- L’alerte Supabase « leaked password protection » nécessite Pro ; le projet conserve l’offre gratuite.
+
+Validation : `node tests/reliability.mjs`, `node tests/badge-photos.mjs`, `node tests/workshopAllocation.mjs`, `tests/staff_photo_cleanup.sql` (métadonnées synthétiques et ROLLBACK), compilation TypeScript/Vite.
