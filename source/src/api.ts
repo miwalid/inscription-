@@ -17,7 +17,7 @@ if(path.startsWith('/api/register')){
 if(path.startsWith('/api/lookup?')&&!init){
  const code=normalizeRegistrationCode(new URLSearchParams(path.split('?')[1]).get('code')||'');
  if(!/^[A-F0-9]{12}$/.test(code))return response({error:'تحقق من الرمز الشخصي: 12 حرفاً أو رقماً.'},400);
- const {data,error}=await supabase.from('training_applicants').select('*').eq('personal_code',code).is('deleted_at',null).maybeSingle();
+ const {data,error}=await supabase.from('training_applicants').select('*,training_stages!inner()').eq('personal_code',code).is('deleted_at',null).is('training_stages.deleted_at',null).maybeSingle();
  if(error)throw error;if(!data)return response({error:'لا يوجد ملف متاح بهذا الرمز ضمن تربصاتك.'},404);
  const {stage_id,created_at,...a}=data;return response({...a,stageId:stage_id,created:created_at});
 }
@@ -31,6 +31,12 @@ if(path==='/api/manage'&&init){
  if(type==='stage'){
  const stage={id:data.id||crypto.randomUUID(),title:data.title.trim(),description:data.description||'',place:data.place,start:data.start,end:data.end,fee:Number(data.fee),closed:!!data.closed,docs:data.docs};
  const {error}=await supabase.from('training_stages').upsert(stage).select('id').single();if(error)throw error;
+ }else if(type==='delete_stage'||type==='restore_stage'){
+ const deleting=type==='delete_stage';
+ const update=supabase.from('training_stages').update({deleted_at:deleting?new Date().toISOString():null}).eq('id',data.id);
+ const {data:stage,error}=await (deleting?update.is('deleted_at',null):update.not('deleted_at','is',null)).select('id').maybeSingle();
+ if(error)throw error;
+ if(!stage)throw Error('التربص غير متاح أو تغيّرت حالته. أعد تحميل الصفحة.');
  }else if(type==='applicant'){
  if(data.gender!=null&&!['male','female'].includes(data.gender))throw Error('اختر الجنس: ذكر أو أنثى.');
  const {error}=await supabase.from('training_applicants').update({gender:data.gender??null,decision:data.decision,paid:!!data.paid}).eq('id',data.id).is('deleted_at',null).select('id').single();if(error)throw error;

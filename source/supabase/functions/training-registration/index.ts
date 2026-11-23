@@ -15,7 +15,7 @@ Deno.serve(async(req:Request)=>{
  const url=new URL(req.url);
  if(req.method==='GET'){
  const id=url.searchParams.get('stage')||'';if(!isUuid(id))return json({error:'رابط التربص غير صالح'},400);
- const {data,error}=await client.from('training_stages').select('id,title,description,place,start,end,closed,docs').eq('id',id).maybeSingle();if(error)throw error;if(!data)return json({error:'التربص غير موجود'},404);return json(data);
+ const {data,error}=await client.from('training_stages').select('id,title,description,place,start,end,closed,docs').eq('id',id).is('deleted_at',null).maybeSingle();if(error)throw error;if(!data)return json({error:'التربص غير موجود'},404);return json(data);
  }
  if(req.method!=='POST')return json({error:'طلب غير صالح'},405);
  if(url.searchParams.get('mode')==='badge-photo')return await handleBadgePhoto(req,client,json,validFile);
@@ -30,7 +30,7 @@ Deno.serve(async(req:Request)=>{
  }
  const declared=Number(req.headers.get('content-length')||0);if(declared>27*1024*1024)return json({error:'الحجم الإجمالي الأقصى 25 MB'},413);
  const f=await req.formData();const stageId=String(f.get('stageId')||'');if(!isUuid(stageId))return json({error:'التربص غير صالح'},400);
- const {data:stage,error:stageError}=await client.from('training_stages').select('id,closed,docs,fee').eq('id',stageId).maybeSingle();if(stageError)throw stageError;if(!stage)return json({error:'التربص غير موجود'},404);if(stage.closed)return json({error:'التسجيل مغلق لهذا التربص'},400);
+ const {data:stage,error:stageError}=await client.from('training_stages').select('id,closed,docs,fee').eq('id',stageId).is('deleted_at',null).maybeSingle();if(stageError)throw stageError;if(!stage)return json({error:'التربص غير موجود'},404);if(stage.closed)return json({error:'التسجيل مغلق لهذا التربص'},400);
  const firstName=String(f.get('firstName')||'').normalize('NFKC').trim().replace(/\s+/g,' '),lastName=String(f.get('lastName')||'').normalize('NFKC').trim().replace(/\s+/g,' '),phone=String(f.get('phone')||'').replace(/[\s-]/g,''),birth=String(f.get('birth')||'');
  if(!firstName||firstName.length>80||!lastName||lastName.length>80||!/^\+?[0-9]{8,15}$/.test(phone)||!/^\d{4}-\d{2}-\d{2}$/.test(birth)||Number.isNaN(Date.parse(birth))||birth<'1900-01-01'||birth>new Date().toISOString().slice(0,10))return json({error:'تحقق من الاسم ورقم الهاتف وتاريخ الولادة'},400);
  const gender=String(f.get('gender')||'');if(!['male','female'].includes(gender))return json({error:'اختر الجنس: ذكر أو أنثى، ثم أرسل الترشح.'},400);

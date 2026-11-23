@@ -8,7 +8,8 @@ function StaffPhoto({person}:{person:StaffMember}){const[url,setUrl]=useState(''
 export default function StaffSection({stages}:{stages:StaffStage[]}){
  const[members,setMembers]=useState<StaffMember[]>([]),[loading,setLoading]=useState(true),[busy,setBusy]=useState(false),[error,setError]=useState(''),[notice,setNotice]=useState(''),[query,setQuery]=useState(''),[stageId,setStageId]=useState(''),[deleted,setDeleted]=useState(false),[modal,setModal]=useState<'edit'|'badges'|null>(null),[edit,setEdit]=useState<StaffMember>(()=>newStaff()),[photo,setPhoto]=useState<File|null>(null),[badgeIds,setBadgeIds]=useState<string[]>([]),[refreshNeeded,setRefreshNeeded]=useState(false);
  async function refresh(){try{setMembers(await loadStaff());setRefreshNeeded(false);return true}catch(e:any){setRefreshNeeded(true);setError(e.message||'تعذر تحميل المسؤولين.');return false}finally{setLoading(false)}}useEffect(()=>{refresh()},[]);
- const filtered=members.filter(m=>!!m.deleted_at===deleted&&(!stageId||m.stage_id===stageId)&&[m.first_name,m.last_name,m.workshop].join(' ').includes(query));
+ const activeStageIds=new Set(stages.map(s=>s.id));
+ const filtered=members.filter(m=>activeStageIds.has(m.stage_id)&&!!m.deleted_at===deleted&&(!stageId||m.stage_id===stageId)&&[m.first_name,m.last_name,m.workshop].join(' ').includes(query));
  const selectedStage=stages.find(s=>s.id===edit.stage_id);
  const entries=badgeIds.map(id=>members.find(m=>m.id===id)).filter((m):m is StaffMember=>!!m&&!m.deleted_at).flatMap(m=>{const stage=stages.find(s=>s.id===m.stage_id);return stage?[staffBadgeEntry(m,stage)]:[]});
  function openEdit(person?:StaffMember){setEdit(person?{...person}:newStaff(stageId||stages[0]?.id||''));setPhoto(null);setError('');setModal('edit')}

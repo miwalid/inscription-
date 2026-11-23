@@ -33,6 +33,8 @@ Chaque organisateur approuvé dispose de toutes les fonctions pour ses propres s
 
 Le bouton « حذف » déplace une inscription vers « المحذوفة ». « استرجاع » permet de la restaurer. Les dossiers supprimés ne figurent plus dans les listes et totaux courants. Une réinscription active identique empêche la restauration pour éviter les doublons.
 
+Dans « تربصاتي », « حذف التربص » place le stage dans « التربصات المحذوفة » après confirmation. Son lien public et son QR code cessent de fonctionner. « استرجاع التربص » rétablit le stage avec ses dossiers, paiements, responsables et groupes, ainsi que son état d’ouverture précédent. Appliquer `database/training_stage_trash.sql` avant de déployer la version correspondante de `training-registration`.
+
 Pour une installation neuve, appliquer `database/schema.sql`, puis `database/organizer_scope_and_registration_trash.sql`. Le test SQL `tests/organizer_scope.sql` utilise une transaction annulée : il vérifie l’isolation réciproque de deux organisateurs, l’accès aux justificatifs, les écritures refusées, la suppression et la restauration.
 
 ## Présentation

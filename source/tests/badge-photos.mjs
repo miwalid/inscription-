@@ -9,7 +9,7 @@ const json=(data,status=200)=>new Response(JSON.stringify(data),{status});
 const valid=async f=>Buffer.from(await f.slice(0,8).arrayBuffer()).equals(Buffer.from(png.slice(0,8)));
 function fixture({conflict=false,deleted=false,approved=true,count=2}={}){
  const files=[{key:personId+'/old',name:'صورة حديثة',type:'image/png',role:'portrait'},{key:personId+'/proof',name:'نسخة هوية',type:'application/pdf'}];while(files.length<count)files.push({key:personId+'/'+files.length,name:'وثيقة',type:'application/pdf'});
- const db={training_admins:approved?[{user_id:'owner'},{user_id:'other'}]:[],training_stages:[{id:stageId,owner_id:'owner',closed:false,docs:[],fee:30}],training_applicants:[{id:personId,stage_id:stageId,files,deleted_at:deleted?'2026-11-01':null}]};const events={uploads:[],removed:[],updates:0};
+ const db={training_admins:approved?[{user_id:'owner'},{user_id:'other'}]:[],training_stages:[{id:stageId,owner_id:'owner',closed:false,deleted_at:null,docs:[],fee:30}],training_applicants:[{id:personId,stage_id:stageId,files,deleted_at:deleted?'2026-11-01':null}]};const events={uploads:[],removed:[],updates:0};
  const client={auth:{getUser:async token=>({data:{user:token==='owner-token'?{id:'owner'}:token==='other-token'?{id:'other'}:null},error:null})},storage:{from:()=>({upload:async(key)=>{events.uploads.push(key);return{error:null}},remove:async keys=>{events.removed.push(...keys);return{error:null}}})},from(table){let filters=[],patch,insert;
   const query={select(){return query},eq(key,value){filters.push(row=>key==='files'?JSON.stringify(row[key])===value:row[key]===value);return query},is(key,value){filters.push(row=>row[key]===value);return query},update(value){patch=value;return query},insert(value){insert=value;return query},async maybeSingle(){const row=db[table].find(row=>filters.every(f=>f(row)));if(patch&&row&&!conflict){events.updates++;Object.assign(row,structuredClone(patch))}return{data:row&&(!patch||!conflict)?structuredClone(row):null,error:null}},async single(){if(insert){const row={...insert,personal_code:'ABCDEF123456'};db[table].push(row);return{data:structuredClone(row),error:null}}return query.maybeSingle()}};return query}};
  return{db,client,events};
@@ -31,3 +31,14 @@ function registration(photo){const form=new FormData();for(const [k,v]of Object.
 assert.equal((await serve(registration(new File(['fake'],'fake.png',{type:'image/png'})))).status,400);
 f.db.training_stages[0].docs=[{name:'صورة حديثة',required:true}];assert.equal((await serve(registration())).status,400);
 console.log('PASS public portrait retained with personal code; corrupt photo and missing required photo rejected');
+
+const publicStage=()=>new Request('https://example.invalid/?stage='+stageId,{headers:{apikey:'sb_publishable_LnRL8UGGU1pu_i46odcGQg_4qnRte3W'}});
+assert.equal((await serve(publicStage())).status,200);
+const countBefore=f.db.training_applicants.length;
+f.db.training_stages[0].deleted_at='2026-11-23T00:00:00Z';
+assert.equal((await serve(publicStage())).status,404);
+assert.equal((await serve(registration(new File([png],'portrait.png',{type:'image/png'})))).status,404);
+assert.equal(f.db.training_applicants.length,countBefore);
+f.db.training_stages[0].deleted_at=null;
+assert.equal((await serve(publicStage())).status,200);
+console.log('PASS public link and registration blocked during deletion, link available after restoration');
